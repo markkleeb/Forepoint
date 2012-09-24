@@ -161,7 +161,14 @@ void testApp::draw() {
     
     ofSetColor(0, 255, 0);
     ofSphere(smoothedForepoint.x, smoothedForepoint.y, smoothedForepoint.z, 10);
-	easyCam.end();
+	
+    
+    ofSetColor(255, 0, 0);
+    ofSphere(forepoint.x, forepoint.y, forepoint.z, 10);
+    
+    easyCam.end();
+    
+    
 	
     ofDisableAlphaBlending();
 	ofSetColor(255);
