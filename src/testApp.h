@@ -25,7 +25,8 @@ public:
     
     vector<Boid*> boids;
     
-    ofVec3f forepoint;    
+    ofVec3f forepoint;
+    ofVec3f smoothedForepoint;
   
     
     ofLight light;

@@ -32,7 +32,7 @@ void testApp::setup() {
     light.setAmbientColor(ofColor(150));
     light.enable();
     
-    for(int i = 0; i < 200; i++){
+    for(int i = 0; i < 100; i++){
         boids.push_back(new Boid(ofVec3f(forepoint)));
         
     }
@@ -73,7 +73,7 @@ void testApp::draw() {
 	ofMesh cloud;
     cloud.setMode(OF_PRIMITIVE_POINTS);
     
-    forepoint.z = 10000;
+    forepoint.z = numeric_limits<float>::max();
 	        
 	for(int y = 0; y < height; y++) {
 		for(int x = 0; x < width; x++) {
@@ -100,21 +100,67 @@ void testApp::draw() {
 		}
         }
     }
+    
+    
+        
+    int searchRadius = 128;
+    ofVec3f sum;
+    int count = 0;
+    
+  
+    int maxSearchDistance = 100;
+
+    for(int y = -searchRadius/2; y < +searchRadius/2; y++){
+        for(int x = -searchRadius/2; x < +searchRadius/2;x++){
+                int curx = x + forepoint.x;
+                int cury = y + forepoint.y;
+            
+                
+            if(curx > 0 && curx < width && cury > 0 && cury < height){
+                int i = cury*width + curx;
+               
+                float curz = distancePixels[i];
+                if(curz !=0 && abs(curz - forepoint.z) < maxSearchDistance){
+                     
+                    sum.z += curz;
+                    sum.x += curx;
+                    sum.y += cury;
+                    count++;
+                }
+                
+            }
+            }
+        }
+    
+
+    ofVec3f avg = sum / count;
+    
     ofEnableAlphaBlending();	
     
-        if(cloud1){
-            ofSetColor(0);
-            cloud.drawVertices();
-        }
-        
-    ofSetColor(0,255,0);
-    ofFill();
-    ofSphere(forepoint.x, forepoint.y, forepoint.z, 10);
+    if(cloud1){
+        ofSetColor(0);
+        cloud.drawVertices();
+    }
     
+    ofSetColor(255,0,0);
+    ofFill();
+    ofSphere(avg, 10);
     
     for(int i= 0; i < boids.size(); i++){
         boids[i]->display();
 	}
+    
+    
+    
+    
+    if(smoothedForepoint == ofVec3f()){
+        smoothedForepoint = avg;
+    } else{
+        smoothedForepoint.interpolate(avg, 0.05);
+    }
+    
+    ofSetColor(0, 255, 0);
+    ofSphere(smoothedForepoint.x, smoothedForepoint.y, smoothedForepoint.z, 10);
 	easyCam.end();
 	
     ofDisableAlphaBlending();
