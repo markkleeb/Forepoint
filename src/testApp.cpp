@@ -74,7 +74,7 @@ void testApp::draw() {
     cloud.setMode(OF_PRIMITIVE_POINTS);
     
     forepoint.z = numeric_limits<float>::max();
-	        
+	int forex, forey;        
 	for(int y = 0; y < height; y++) {
 		for(int x = 0; x < width; x++) {
           
@@ -92,6 +92,7 @@ void testApp::draw() {
 				} else {
 					cloud.addVertex(ConvertProjectiveToRealWorld(x, y, z));
                     if(z < forepoint.z){
+                        forex = x, forey = y;
                         forepoint = ConvertProjectiveToRealWorld(x,y,z);
                     }
 				}
@@ -112,16 +113,16 @@ void testApp::draw() {
 
     for(int y = -searchRadius/2; y < +searchRadius/2; y++){
         for(int x = -searchRadius/2; x < +searchRadius/2;x++){
-                int curx = x + forepoint.x;
-                int cury = y + forepoint.y;
+            int curx = x + forex;
+            int cury = y + forey;
             
-                
+            
             if(curx > 0 && curx < width && cury > 0 && cury < height){
                 int i = cury*width + curx;
-               
+                
                 float curz = distancePixels[i];
                 if(curz !=0 && abs(curz - forepoint.z) < maxSearchDistance){
-                     
+                    
                     sum.z += curz;
                     sum.x += curx;
                     sum.y += cury;
@@ -129,22 +130,37 @@ void testApp::draw() {
                 }
                 
             }
-            }
         }
+    }
     
 
-    ofVec3f avg = sum / count;
-    
+    if(count > 0){
+        
+        ofVec3f avg = sum / count;
+        
+        
+        
+        avg = ConvertProjectiveToRealWorld(avg.x, avg.y, avg.z);
+        
+       /* 
+        ofSetColor(0,0,255);
+        ofFill();
+        ofSphere(avg, 10);    
+        */
+        if(smoothedForepoint == ofVec3f()){
+            smoothedForepoint = avg;
+        } else{
+            smoothedForepoint.interpolate(avg, 0.1);
+        }
+        
+    }
     ofEnableAlphaBlending();	
     
     if(cloud1){
         ofSetColor(0);
         cloud.drawVertices();
     }
-    
-    ofSetColor(255,0,0);
-    ofFill();
-    ofSphere(avg, 10);
+  
     
     for(int i= 0; i < boids.size(); i++){
         boids[i]->display();
@@ -153,19 +169,14 @@ void testApp::draw() {
     
     
     
-    if(smoothedForepoint == ofVec3f()){
-        smoothedForepoint = avg;
-    } else{
-        smoothedForepoint.interpolate(avg, 0.05);
-    }
-    
+        
     ofSetColor(0, 255, 0);
     ofSphere(smoothedForepoint.x, smoothedForepoint.y, smoothedForepoint.z, 10);
 	
-    
+    /*
     ofSetColor(255, 0, 0);
     ofSphere(forepoint.x, forepoint.y, forepoint.z, 10);
-    
+    */
     easyCam.end();
     
     
